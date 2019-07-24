@@ -561,7 +561,15 @@ hsa_status_t hsa_amd_memory_lock(void* host_ptr, size_t size,
   const amd::MemoryRegion* system_region = static_cast<const amd::MemoryRegion*>(
       core::Runtime::runtime_singleton_->system_regions_coarse()[0]);
 
-  return system_region->Lock(num_agent, agents, host_ptr, size, agent_ptr);
+  hsa_status_t status = system_region->Lock(num_agent, agents, host_ptr,
+                                            size, agent_ptr);
+  if(HSA_STATUS_SUCCESS == status) {
+    // register the locked memory in the allocation map:
+    status = core::Runtime::runtime_singleton_
+      ->RecordAgentPtrMemoryRegion(system_region, agent_ptr, size);
+  }
+
+  return status;
   CATCH;
 }
 
@@ -588,7 +596,14 @@ hsa_status_t hsa_amd_memory_lock_to_pool(void* host_ptr, size_t size, hsa_agent_
   if (mem_region->owner()->device_type() != core::Agent::kAmdCpuDevice)
     return (hsa_status_t)HSA_STATUS_ERROR_INVALID_MEMORY_POOL;
 
-  return mem_region->Lock(num_agent, agents, host_ptr, size, agent_ptr);
+  hsa_status_t status = mem_region->Lock(num_agent, agents, host_ptr, size, agent_ptr);
+  if(HSA_STATUS_SUCCESS == status) {
+    // register the locked memory in the allocation map:
+    status = core::Runtime::runtime_singleton_
+      ->RecordAgentPtrMemoryRegion(mem_region, agent_ptr, size);
+  }
+
+  return status;
   CATCH;
 }
 

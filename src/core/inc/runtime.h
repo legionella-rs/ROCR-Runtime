@@ -268,6 +268,9 @@ class Runtime {
 
   hsa_status_t InteropUnmap(void* ptr);
 
+  hsa_status_t RecordAgentPtrMemoryRegion(const MemoryRegion *region, const void *agent_ptr,
+                                          size_t size, void *user_ptr = nullptr);
+
   struct PtrInfoBlockData {
     void* base;
     size_t length;

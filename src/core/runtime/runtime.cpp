@@ -668,6 +668,16 @@ hsa_status_t Runtime::InteropUnmap(void* ptr) {
   return HSA_STATUS_SUCCESS;
 }
 
+hsa_status_t Runtime::RecordAgentPtrMemoryRegion(const MemoryRegion *region, const void *agent_ptr,
+                                                 size_t size, void *user_ptr) {
+  auto AllocRegion = AllocationRegion(region, size);
+  AllocRegion.user_ptr = user_ptr;
+
+  ScopedAcquire<KernelMutex> lock(&memory_lock_);
+  allocation_map_[agent_ptr] = std::move(AllocRegion);
+  return HSA_STATUS_SUCCESS;
+}
+
 hsa_status_t Runtime::PtrInfo(void* ptr, hsa_amd_pointer_info_t* info, void* (*alloc)(size_t),
                               uint32_t* num_agents_accessible, hsa_agent_t** accessible,
                               PtrInfoBlockData* block_info) {
